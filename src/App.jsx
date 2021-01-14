@@ -1,6 +1,7 @@
 import logo from './logo.svg';
 import Ticker from "./components/Ticker";
 import './App.css';
+import 'semantic-ui-css/semantic.min.css'
 
 function App() {
   return (
@@ -12,8 +13,9 @@ function App() {
     //     </p>
     //   </header>
     // </div>
-    <div></div>
-        <Ticker />
+    <div>
+      <Ticker />
+    </div>
   );
 }
 

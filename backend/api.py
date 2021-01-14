@@ -1,7 +1,7 @@
 import requests
 import sys
 from flask_cors import CORS, cross_origin
-from flask import Flask, Response
+from flask import Flask, Response, request
 from urllib.parse import urlencode
 import os
 from os.path import join, dirname
@@ -48,9 +48,11 @@ def send_public_request(url_path, payload={}):
     return response.json()
 
 
-@app.route('/ticker')
+@app.route('/ticker', methods=['POST'])
 @cross_origin()
 def get_btc_usd():
-    r = send_public_request('/api/v3/ticker/price', {'symbol': 'BTCUSDT'})
+    symbol = request.json
+    print(symbol,  file=sys.stdout)
+    r = send_public_request('/api/v3/ticker/price', symbol)
     print(r, file=sys.stdout)
     return {'response': r}
