@@ -3,6 +3,15 @@ import sys
 from flask_cors import CORS, cross_origin
 from flask import Flask, Response
 from urllib.parse import urlencode
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+EBANJKO = os.environ.get("EBANJKO")
+print(EBANJKO, file=sys.stdout)
+
 
 # print(sys.path, file=sys.stdout)
 app = Flask(__name__)

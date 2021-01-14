@@ -5,12 +5,7 @@ function Ticker() {
   const [btcTicker, setBtcPrice] = useState({})
   useEffect(() => {
     (async () => {
-      const response = await fetch('http://127.0.0.1:5000/ticker', {
-        mode: 'cors',
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
+      const response = await fetch('http://127.0.0.1:5000/ticker');
       const responseData = await response.json()
       console.log('🚀 ~ file: Ticker.jsx ~ line 15 ~ responseData', responseData);
       setBtcPrice(responseData.response)
