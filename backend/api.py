@@ -9,8 +9,6 @@ from dotenv import load_dotenv
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
-EBANJKO = os.environ.get("EBANJKO")
-print(EBANJKO, file=sys.stdout)
 
 
 # print(sys.path, file=sys.stdout)
@@ -18,8 +16,9 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-KEY = 'lvU0XCdkvH2M64CG1aTBczcIdmK4TC9umrNYqLupIYEwf5rlUbH0v93zCEFl2v4R'
-SECRET = 'AhAcdUh7TM1KUx6ggkytfa7UWLeuaQkLwUAd9uec9toEo68AfPVLcw2LunDs1e6r'
+KEY = os.environ.get("KEY")
+SECRET = os.environ.get("SECRET")
+
 # BASE_URL = 'https://api.binance.com' # production base url
 BASE_URL = 'https://testnet.binance.vision'  # testnet base url
 

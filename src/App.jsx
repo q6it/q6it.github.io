@@ -1,5 +1,5 @@
 import logo from './logo.svg';
-import Ticker from "./components/Ticker";
+import Table from "./components/Table";
 import './App.css';
 import 'semantic-ui-css/semantic.min.css'
 
@@ -14,7 +14,7 @@ function App() {
     //   </header>
     // </div>
     <div>
-      <Ticker />
+      <Table />
     </div>
   );
 }

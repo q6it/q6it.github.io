@@ -7,14 +7,14 @@ function Ticker() {
   console.log('🚀 ~ file: Ticker.jsx ~ line 6 ~ Ticker ~ symbol', symbol);
 
   const [btcTicker, setBtcPrice] = useState({});
-  useEffect(() => {
-    (async () => {
-      // response.json().then((suka) => {
-      //   console.log('🚀 ~ file: Ticker.jsx ~ line 14 ~ test.then ~ suka', suka);
-      // });
-      // console.log('🚀 ~ file: Ticker.jsx ~ line 6 ~ test', test);
-    })();
-  }, [btcTicker]);
+  // useEffect(() => {
+  //   (async () => {
+  //     // response.json().then((suka) => {
+  //     //   console.log('🚀 ~ file: Ticker.jsx ~ line 14 ~ test.then ~ suka', suka);
+  //     // });
+  //     // console.log('🚀 ~ file: Ticker.jsx ~ line 6 ~ test', test);
+  //   })();
+  // }, []);
 
   const getPrice = async () => {
     // const response = await fetch('http://127.0.0.1:5000/ticker');
