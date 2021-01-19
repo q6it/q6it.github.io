@@ -2,161 +2,125 @@ import hmac
 import time
 import hashlib
 import requests
+import logging
 import pandas as pd
 import json
 from urllib.parse import urlencode
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
 
-KEY = 'apikey'
-SECRET = 'secret'
-# BASE_URL = 'https://api.binance.com' # production base url
-BASE_URL = 'https://testnet.binance.vision'  # testnet base url
-# %%
-print('hello')
-# Utility
+from api import get_fund_amounts, get_price, create_order
+from utils import check_type
 
 
-def checkType(x):
-    print(type(x))
+# def place_pyramid(symbol, start_amount, start_price, side):
+def place_pyramid(pyramid_params):
+    side = pyramid_params['side']
+    symbol = pyramid_params['symbol']
+    sell_symbol = pyramid_params['sell_symbol']
+
+    fee = 0.075*2
+    step_amount = 1.005
+    price = float(pyramid_params['start_price'])
+
+    if side == 'BUY':
+        start_price_now = price*(1-fee/100)
+        step_percentage_value = 0.995
+    if side == 'SELL':
+        start_price_now = price * (1 + fee / 100)
+        step_percentage_value = 1.005
+    new_price = start_price_now
+    print('new_price start', new_price)
+    new_amount = pyramid_params['start_amount']
+    locked_funds = 0
+
+    while(locked_funds < pyramid_params['invest_limit']):
+        print('locked_funds', locked_funds)
+        print('invest_limit', pyramid_params['invest_limit'])
+        if symbol == 'BTCDOWNUSDT':
+            new_price = round((new_price * step_percentage_value), 4)
+            new_amount = round((new_amount*step_amount), 2)
+        else:
+            new_price = round((new_price * step_percentage_value), 2)
+            new_amount = round((new_amount * step_amount), 6)
+        # print('new_price loop', new_price)
+        # print('new_amount loop', new_amount)
+        params = {
+            "symbol": symbol,
+            "side": side,
+            "type": 'LIMIT',
+            "timeInForce": 'GTC',
+            "quantity": new_amount,
+            "price": new_price
+        }
+        order_details = create_order(params)
+        time.sleep(0.09)
+        locked_funds = float(get_fund_amounts(sell_symbol)['locked'])
+        print('locked_funds', locked_funds)
+        if 'msg' in order_details:
+            print(order_details['msg'])
+            if order_details['msg'] == 'Account has insufficient balance for requested action.':
+                break
+        time.sleep(0.5)
 
 
-''' ======  begin of functions, you don't need to touch ====== '''
+# SETUP YOUR ORDERS
+def get_pyramid_params():
+    # symbol = 'BTCEUR'  # from input
+    symbol = 'BTCDOWNUSDT'  # from input
+    sell_symbol = 'USDT'  # TODO: manage this from pair
+    side = 'BUY'  # from toggle 'BUY'/'SEL'
+    current_price = get_price(symbol)
+    print('current_price', current_price)
 
+    invest_step_amount = 48  # from input
+    start_amount = round(invest_step_amount / current_price, 10)
+    print('start_amount', start_amount)
 
-def hashing(query_string):
-    return hmac.new(SECRET.encode('utf-8'), query_string.encode('utf-8'), hashlib.sha256).hexdigest()
+    invest_percentage = 100  # from slider input
+    invest_percentage_value = invest_percentage / 100
+    free_funds = float(get_fund_amounts(sell_symbol)['free'])
+    print('free_funds', free_funds)
+    invest_limit = free_funds * invest_percentage_value
+    # orders_count = free_funds // invest_limit
+    # print('orders_count', orders_count)
+    print('invest_limit', invest_limit)
 
-
-def get_timestamp():
-    return int(time.time() * 1000)
-
-
-def dispatch_request(http_method):
-    session = requests.Session()
-    session.headers.update({
-        'Content-Type': 'application/json;charset=utf-8',
-        'X-MBX-APIKEY': KEY
-    })
     return {
-        'GET': session.get,
-        'DELETE': session.delete,
-        'PUT': session.put,
-        'POST': session.post,
-    }.get(http_method, 'GET')
-
-# used for sending request requires the signature
-
-
-def send_signed_request(http_method, url_path, payload={}):
-    query_string = urlencode(payload, True)
-    print(query_string)
-    if query_string:
-        query_string = "{}&timestamp={}".format(query_string, get_timestamp())
-    else:
-        query_string = 'timestamp={}'.format(get_timestamp())
-
-    url = BASE_URL + url_path + '?' + query_string + \
-        '&signature=' + hashing(query_string)
-    print("{} {}".format(http_method, url))
-    params = {'url': url, 'params': {}}
-    response = dispatch_request(http_method)(**params)
-    # checkType(r)
-    return response.json()
-
-# used for sending public data request
-
-
-def send_public_request(url_path, payload={}):
-    query_string = urlencode(payload, True)
-    url = BASE_URL + url_path
-    if query_string:
-        url = url + '?' + query_string
-    print("{}".format(url))
-    response = dispatch_request('GET')(url=url)
-    return response.json()
-
-
-''' ======  end of functions ====== '''
-
-### public data endpoint, call send_public_request #####
-# get klines
-
-# response = send_public_request('/api/v3/ticker/price', {'symbol': 'BTCUSDT'})
-# print(response)
-
-### USER_DATA endpoints, call send_signed_request #####
-# get account informtion
-# if you can see the account details, then the API key/secret is correct
-
-
-def getbalances():
-    r = send_signed_request('GET', '/api/v3/account')
-    balances = r['balances']
-    dfbalances = pd.DataFrame.from_dict(balances)
-    return dfbalances
-
-
-def create_order(paramsDict, quantity, price):
-    params = {
-        "symbol": paramsDict['symbol'],
-        "side": paramsDict['side'],
-        "type": paramsDict["type"],
-        "timeInForce": paramsDict["timeInForce"],
-        "quantity": quantity,
-        "price": price,
+        "symbol": symbol,
+        "start_amount": start_amount,
+        "start_price": get_price(symbol),
+        "side": side,
+        # 'orders_count': orders_count,
+        'invest_limit': invest_limit,
+        'sell_symbol': sell_symbol
     }
-    response = send_signed_request('POST', '/api/v3/order', params)
-    return response
 
 
-def getPrice():
-    return 35000
+input("Press Enter to continue...")
+# START TRADE HERE
 
-# def cancel_all_order(symbol):
-#     r = send_signed_request('DELETE','api/v3/openOrders?symbol='+symbol)
-#     return r
-# # DELETE https://testnet.binance.visionapi/v3/openOrders?symbol=BTCUSDT?timestamp=1609976874448&signature=ebf9ddb4c19b84c259966649095039d2f9595e10a30f4d0f6ae24821641ecf0f
-#
-#
+place_pyramid(get_pyramid_params())
+# place_pyramid(symbol, start_amount, get_price(symbol), 'BUY')
+# place_pyramid(symbol, 0.0005, float('29740'), 'SELL')
+# cancel_all_order(symbol)
 
 
-def cancel_all_order(symbol):
-    params = {
-        'symbol': symbol
-    }
-    r = send_signed_request('DELETE', '/api/v3/openOrders', params)
-    return r
-
+# LEGACY CODE
+# symbol = 'BTCEUR'
+# df = pd.DataFrame.from_records(get_all_orders(symbol))
+# csv_name  = symbol + '.csv'
+# df.to_csv(csv_name)
 
 #
-fee = 0.75*2
-start_price_now = getPrice()*(1-fee/100)
-# # start_price_custom = 35000
-start_amount = 0.001
-amount = start_amount
-# step_price = 0.99
-# step_amount = 1.01
-new_price = start_price_now
-#
-symbol = 'BTCUSDT'
-#
-#
-test_dict = params = {
-    "symbol": symbol,
-    "side": 'BUY',
-    "type": 'LIMIT',
-    "timeInForce": 'GTC',
-}
-print(create_order(test_dict, amount, new_price))
-#
-# while(True):
-#     new_price = round((new_price*step_price),2)
-#     print(new_price)
-#     amount = 0.1
-#     order_details = create_order(test_dict, amount, new_price)
-#     print(order_details)
-symbol = 'BTCUSDT'
-print(cancel_all_order(symbol))
-print(getbalances())
+# orders = pd.DataFrame.from_records(get_all_orders(symbol))
+# orders.to_csv('test2.csv')
+
+
+# orders = pd.DataFrame.from_dict(get_all_orders(symbol))
+# orders = pd.DataFrame.from_records(get_all_orders(symbol))
+# orders.to_csv("test.csv")
 
 
 # while(True):
@@ -204,6 +168,3 @@ print(getbalances())
 # }
 # response = send_signed_request('POST', '/sapi/v1/futures/transfer', params)
 # print(response)
-# %%
-
-
