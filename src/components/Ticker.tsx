@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Input, Button } from 'semantic-ui-react';
-import request from '../api'
+import request from '../api';
+
+// type Props  {
+//   prop: ''
+// }
 
 function Ticker() {
   const [symbol, setSymbol] = useState('');
