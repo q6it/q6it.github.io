@@ -7,7 +7,7 @@ import os
 from os.path import join, dirname
 from dotenv import load_dotenv
 
-from main import send_public_request, get_all_orders
+from api import send_public_request, get_all_orders
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
