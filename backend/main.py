@@ -21,9 +21,10 @@ def place_pyramid(pyramid_params):
     side = pyramid_params['side']
     symbol = pyramid_params['symbol']
     sell_symbol = pyramid_params['sell_symbol']
-    fee = 0.075*2
-    step_amount = 1.005
+    fee = pyramid_params['fee']*2
+    step_amount = pyramid_params['step_amount']
     batch_id = 0
+    spent_funds = 0
     price = float(pyramid_params['start_price'])
     if side == 'BUY':
         start_price_now = price*(1-fee/100)
@@ -34,14 +35,12 @@ def place_pyramid(pyramid_params):
     new_price = start_price_now
     print('new_price start', new_price)
     new_amount = pyramid_params['start_amount']
-    spent_funds = 0
 
     while(spent_funds < pyramid_params['invest_limit']):
         print('invest_limit', pyramid_params['invest_limit'])
         if symbol == 'BTCDOWNUSDT':
             new_price = round((new_price * step_percentage_value), 4)
             new_amount = round((new_amount*step_amount), 2)
-
         else:
             new_price = round((new_price * step_percentage_value), 2)
             new_amount = round((new_amount * step_amount), 6)
@@ -49,7 +48,7 @@ def place_pyramid(pyramid_params):
         # print('new_amount loop', new_amount)
         spent_funds = spent_funds + new_price*new_amount
         print('spentfunds',spent_funds)
-        params = {
+        order_params = {
             "symbol": symbol,
             "side": side,
             "type": 'LIMIT',
@@ -57,86 +56,85 @@ def place_pyramid(pyramid_params):
             "quantity": new_amount,
             "price": new_price
         }
-        order_details = create_order(params)
-        print('before', order_details)
-        order_details['order_total'] = float(order_details['price'])*float(order_details['origQty'])
-        order_details['batch_id'] = batch_id + 1
-        print('after', order_details)
-        orders_list.append(order_details)
-        time.sleep(0.09)
-        locked_funds = float(get_fund_amounts(sell_symbol)['locked'])
-        print('locked_funds', locked_funds)
+        order_details = create_order(order_params)
         if 'msg' in order_details:
             print(order_details['msg'])
             if order_details['msg'] == 'Account has insufficient balance for requested action.':
                 break
+        # print('before', order_details)
+        order_details['order_total'] = float(order_details['price'])*float(order_details['origQty'])
+        order_details['batch_id'] = batch_id + 1
+        # print('after', order_details)
+        orders_list.append(order_details)
+        time.sleep(0.09)
+        locked_funds = float(get_fund_amounts(sell_symbol)['locked'])
+        # print('locked_funds', locked_funds)
+
         time.sleep(0.5)
 
 
 # SETUP YOUR ORDERS
 
-
-def get_pyramid_params():
-    symbol = 'BTCUSDT'  # from input
-    sell_symbol = 'USDT'  # TODO: manage this from pair
-    side = 'BUY'  # from toggle 'BUY'/'SEL'
-    start_price = 31000
-    invest_step_amount = 30  # from input
-    invest_percentage = 90  # from slider input
-    start_amount = round(invest_step_amount / start_price, 8)
-    invest_percentage_value = invest_percentage / 100
-    free_funds = float(get_fund_amounts(sell_symbol)['free'])
+def update_pyramid_params(pyramid_params):
+    start_amount = round(pyramid_params['invest_step_amount'] / pyramid_params['start_price'], 8)
+    invest_percentage_value = pyramid_params['invest_percentage'] / 100
+    free_funds = float(get_fund_amounts(pyramid_params['sell_symbol'])['free'])
     invest_limit = free_funds * invest_percentage_value
     # orders_count = free_funds // invest_limit
     # print('orders_count', orders_count)
-
     order_details = {
-        "symbol": symbol,
+        "symbol": pyramid_params['symbol'],
         "start_amount": start_amount,
-        "start_price": start_price,
-        "side": side,
+        "start_price": pyramid_params['start_price'],
+        "side": pyramid_params['side'],
         # 'orders_count': orders_count,
         'invest_limit': invest_limit,
-        'sell_symbol': sell_symbol
+        'sell_symbol': pyramid_params['sell_symbol'],
+        'fee': pyramid_params['fee'],
+        'step_amount': pyramid_params['step_amount']
     }
     # print(order_details)
     return order_details
 
-# def sort_details(order_details):
-#
-
 input("Press Enter to continue...")
+
+start_params = {
+"symbol" : 'BTCDOWNUSDT',
+"sell_symbol" : 'USDT',
+"side" : 'BUY',
+"start_price" : 0.3061,
+"invest_step_amount" : 50,
+"invest_percentage" : 90,
+'fee' : 0.075,
+'step_amount' : 1.005
+}
 
 
 # START TRADE HERE
 
-orders_list = [
-{'symbol': 'BTCUSDT', 'orderId': 4450439870, 'orderListId': -1, 'clientOrderId': 'mEPmAU9XhSCHBMjmi9HRmi', 'transactTime': 1611349777008, 'price': '29292.99000000', 'origQty': '0.00102300', 'executedQty': '0.00000000', 'cummulativeQuoteQty': '0.00000000', 'status': 'NEW', 'timeInForce': 'GTC', 'type': 'LIMIT', 'side': 'BUY', 'fills': [], 'order_total': 29.966728770000003},
-{'symbol': 'BTCUSDT', 'orderId': 4450439870, 'orderListId': -1, 'clientOrderId': 'mEPmAU9XhSCHBMjmi9HRmi', 'transactTime': 1611349777008, 'price': '29292.99000000', 'origQty': '0.00102300', 'executedQty': '0.00000000', 'cummulativeQuoteQty': '0.00000000', 'status': 'NEW', 'timeInForce': 'GTC', 'type': 'LIMIT', 'side': 'BUY', 'fills': [], 'order_total': 29.966728770000003},
-{'symbol': 'BTCUSDT', 'orderId': 4450439870, 'orderListId': -1, 'clientOrderId': 'mEPmAU9XhSCHBMjmi9HRmi', 'transactTime': 1611349777008, 'price': '29292.99000000', 'origQty': '0.00102300', 'executedQty': '0.00000000', 'cummulativeQuoteQty': '0.00000000', 'status': 'NEW', 'timeInForce': 'GTC', 'type': 'LIMIT', 'side': 'BUY', 'fills': [], 'order_total': 29.966728770000003},
-{'symbol': 'BTCUSDT', 'orderId': 4450439870, 'orderListId': -1, 'clientOrderId': 'mEPmAU9XhSCHBMjmi9HRmi', 'transactTime': 1611349777008, 'price': '29292.99000000', 'origQty': '0.00102300', 'executedQty': '0.00000000', 'cummulativeQuoteQty': '0.00000000', 'status': 'NEW', 'timeInForce': 'GTC', 'type': 'LIMIT', 'side': 'BUY', 'fills': [], 'order_total': 29.966728770000003}
-]
-# place_pyramid(get_pyramid_params())
+orders_list = []
+updated_params = update_pyramid_params(start_params)
+place_pyramid(updated_params)
 
 sum_amount = sum(float(row['origQty']) for row in orders_list)
 sum_total = sum(row['order_total'] for row in orders_list)
 
-# total_now = sum_amount*get_price('BTCUSDT')
-total_now = 100
+total_now = sum_amount*get_price('BTCUSDT')
+# total_now = 100
 percent_change = (total_now/sum_total-1)*100
 profit = total_now-sum_total
-
 df = pd.DataFrame.from_records(orders_list)
-print(datetime.now())
-timestr = time.strftime("%Y%m%d-%H%M%S")+'.csv'
-print(timestr)
-df.to_csv(timestr)
+print(df)
+# print(datetime.now())
+# timestr = time.strftime("%Y%m%d-%H%M%S")+'.csv'
+# print(timestr)
+# df.to_csv(timestr)
 # df = pd.read_csv(timestr)
-# print(df)
-# print(profit)
-# print(sum_amount)
-# print(sum_total)
-# print(total_now)
+#
+print('profit', profit)
+print('sum_amount',sum_amount)
+print('sum_total',sum_total)
+print('total_now',total_now)
 
 
 # symbol='BTCUSTD'
