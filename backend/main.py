@@ -1,10 +1,13 @@
 import hmac
 import time
+
+import pymongo
 from datetime import datetime
 import hashlib
 import requests
 import logging
 import pandas as pd
+import pprint
 import json
 from urllib.parse import urlencode
 import os
@@ -23,7 +26,7 @@ def place_pyramid(pyramid_params):
     sell_symbol = pyramid_params['sell_symbol']
     fee = pyramid_params['fee']*2
     step_amount = pyramid_params['step_amount']
-    batch_id = 0
+    batch_id = find_latest_batch_id()
     spent_funds = 0
     price = float(pyramid_params['start_price'])
     if side == 'BUY':
@@ -59,8 +62,7 @@ def place_pyramid(pyramid_params):
         order_details = create_order(order_params)
         if 'msg' in order_details:
             print(order_details['msg'])
-            if order_details['msg'] == 'Account has insufficient balance for requested action.':
-                break
+            break
         # print('before', order_details)
         order_details['order_total'] = float(order_details['price'])*float(order_details['origQty'])
         order_details['batch_id'] = batch_id + 1
@@ -75,11 +77,14 @@ def place_pyramid(pyramid_params):
 
 # SETUP YOUR ORDERS
 
+def get_free_funds(symbol):
+    free_funds = float(get_fund_amounts(symbol)['free'])
+    return free_funds
+
 def update_pyramid_params(pyramid_params):
     start_amount = round(pyramid_params['invest_step_amount'] / pyramid_params['start_price'], 8)
     invest_percentage_value = pyramid_params['invest_percentage'] / 100
-    free_funds = float(get_fund_amounts(pyramid_params['sell_symbol'])['free'])
-    invest_limit = free_funds * invest_percentage_value
+    invest_limit = get_free_funds(pyramid_params['sell_symbol']) * invest_percentage_value
     # orders_count = free_funds // invest_limit
     # print('orders_count', orders_count)
     order_details = {
@@ -96,45 +101,68 @@ def update_pyramid_params(pyramid_params):
     # print(order_details)
     return order_details
 
-input("Press Enter to continue...")
+def calculate_profit(orders_list):
+    sum_amount = sum(float(row['origQty']) for row in orders_list)
+    sum_total = sum(row['order_total'] for row in orders_list)
+    total_now = sum_amount*get_price(updated_params['symbol'])
+    percent_change = (total_now/sum_total-1)*100
+    profit = total_now-sum_total
+    print('change%',percent_change)
+    print('profit', profit)
+    print('sum_amount', sum_amount)
+    print('sum_total', sum_total)
+    print('total_now', total_now)
+
+def find_latest_batch_id():
+    sorted_by_batch_id = orders_collection.find().sort('batch_id',-1) # find latest batch ID
+    latest_batch_id = sorted_by_batch_id[0]['batch_id']
+    return latest_batch_id
+
+
 
 start_params = {
 "symbol" : 'BTCDOWNUSDT',
 "sell_symbol" : 'USDT',
 "side" : 'BUY',
-"start_price" : 0.3061,
-"invest_step_amount" : 50,
-"invest_percentage" : 90,
+"start_price" : 0.3055,
+"invest_step_amount" : 20,
+"invest_percentage" : 50,
 'fee' : 0.075,
 'step_amount' : 1.005
 }
 
 
 # START TRADE HERE
+#MongoDB init
+db_client = pymongo.MongoClient("mongodb://localhost:27017/")
+db = db_client['bitpocket_db']
+orders_collection = db['orders']
+
 
 orders_list = []
 updated_params = update_pyramid_params(start_params)
+print('Please check the start parameters')
+pprint.pprint(start_params)
+input("Press Enter to continue...")
 place_pyramid(updated_params)
+print('Showing placed orders')
+orders_list_formated = pd.DataFrame.from_records(orders_list)
+pprint.pprint(orders_list_formated)
 
-sum_amount = sum(float(row['origQty']) for row in orders_list)
-sum_total = sum(row['order_total'] for row in orders_list)
+print('profit calculation')
+calculate_profit(orders_list)
 
-total_now = sum_amount*get_price('BTCUSDT')
-# total_now = 100
-percent_change = (total_now/sum_total-1)*100
-profit = total_now-sum_total
-df = pd.DataFrame.from_records(orders_list)
-print(df)
+orders_collection.insert_many(orders_list) # add batch to DB
+
+# print(x.inserted_ids)
+# print(db.list_collections())
+
 # print(datetime.now())
 # timestr = time.strftime("%Y%m%d-%H%M%S")+'.csv'
 # print(timestr)
 # df.to_csv(timestr)
 # df = pd.read_csv(timestr)
 #
-print('profit', profit)
-print('sum_amount',sum_amount)
-print('sum_total',sum_total)
-print('total_now',total_now)
 
 
 # symbol='BTCUSTD'
