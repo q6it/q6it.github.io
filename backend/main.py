@@ -34,10 +34,11 @@ def place_pyramid(pyramid_params):
     new_price = start_price_now
     print('new_price start', new_price)
     new_amount = pyramid_params['start_amount']
-    locked_funds = 0
+    spent_funds = 0
 
-    while(locked_funds < pyramid_params['invest_limit']):
-        print('locked_funds', locked_funds)
+    while(spent_funds < pyramid_params['invest_limit']):
+        print('invest_limit', pyramid_params['invest_limit'])
+        print('spent_funds', spent_funds)
         if symbol == 'BTCDOWNUSDT':
             new_price = round((new_price * step_percentage_value), 4)
             new_amount = round((new_amount*step_amount), 2)
@@ -55,9 +56,11 @@ def place_pyramid(pyramid_params):
             "price": new_price
         }
         order_details = create_order(params)
-        time.sleep(0.09)
-        locked_funds = float(get_fund_amounts(sell_symbol)['locked'])
-        print('locked_funds', locked_funds)
+        spent_funds = spent_funds + new_price * new_amount
+
+        # time.sleep(0.09)
+        # locked_funds = float(get_fund_amounts(sell_symbol)['locked'])
+        # print('locked_funds', locked_funds)
         if 'code' in order_details:
             print(order_details['msg'])
             break
@@ -74,25 +77,17 @@ def get_pyramid_params():
     sell_symbol = 'USDT'  # TODO: manage this from pair
     # BUY   SELL
     side = 'BUY'  # from toggle
+    invest_step_amount = 15  # from input
     current_price = get_price(symbol)
-    print('current_price', current_price)
+    invest_percentage = 100  # from slider input
+    start_price = get_price(symbol) * 0.97  # from input
+    # start_price = float('34185')
 
-    invest_step_amount = 60  # from input
-    start_amount = round(invest_step_amount / current_price, 10)
+    start_amount = round(invest_step_amount / current_price, 8)
 
-    print('start_amount', start_amount)
-
-    start_price = get_price(symbol)  # from input
-    # start_price = float('32185')
-
-    invest_percentage = 70  # from slider input
     invest_percentage_value = invest_percentage / 100
     free_funds = float(get_fund_amounts(sell_symbol)['free'])
-    print('free_funds', free_funds)
     invest_limit = free_funds * invest_percentage_value
-    # orders_count = free_funds // invest_limit
-    # print('orders_count', orders_count)
-    print('invest_limit', invest_limit)
 
     return {
         "symbol": symbol,
