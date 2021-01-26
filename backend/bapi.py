@@ -18,9 +18,9 @@ dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
 # LIVE keys
-KEY = os.environ.get("BKEY")
-SECRET = os.environ.get("BSECRET")
-BASE_URL = os.environ.get("BURL")
+KEY = os.environ.get("KEY")
+SECRET = os.environ.get("SECRET")
+BASE_URL = os.environ.get("BASE_URL")
 
 # Sandbox keys
 # KEY = os.environ.get("S_KEY")
