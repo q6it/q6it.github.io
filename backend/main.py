@@ -21,6 +21,8 @@ pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 # def place_pyramid(symbol, start_amount, start_price, side):
 
+orders_list = []
+
 
 def place_pyramid(pyramid_params):
     side = pyramid_params['side']
@@ -43,16 +45,15 @@ def place_pyramid(pyramid_params):
     new_amount = pyramid_params['start_amount']
 
     while(spent_funds < pyramid_params['invest_limit']):
-        print('invest_limit', pyramid_params['invest_limit'])
         if symbol == 'BTCDOWNUSDT':
             new_price = round((new_price * step_percentage_value), 4)
             new_amount = round((new_amount*step_amount), 2)
         else:
             new_price = round((new_price * step_percentage_value), 2)
             new_amount = round((new_amount * step_amount), 6)
-        print('new_price loop', new_price)
         # print('new_amount loop', new_amount)
         spent_funds = spent_funds + new_price*new_amount
+        print('new_price loop', new_price)
         print('spentfunds', spent_funds)
         order_params = {
             "symbol": symbol,
@@ -73,7 +74,9 @@ def place_pyramid(pyramid_params):
         # print('after', order_details)
         orders_list.append(order_details)
         time.sleep(0.09)
-        locked_funds = float(get_fund_amounts(sell_symbol)['locked'])
+
+        # Not needed
+        # locked_funds = float(get_fund_amounts(sell_symbol)['locked'])
         # print('locked_funds', locked_funds)
 
         time.sleep(0.5)
@@ -112,8 +115,8 @@ def update_pyramid_params(pyramid_params):
 def calculate_profit(orders_list):
     sum_amount = sum(float(row['origQty']) for row in orders_list)
     sum_total = sum(row['order_total'] for row in orders_list)
-    total_now = sum_amount*get_price(updated_params['symbol'])
-    percent_change = (total_now/sum_total-1)*100
+    total_now = sum_amount * get_price(updated_params['symbol'])
+    percent_change = (total_now/sum_total-1) * 100
     profit = total_now-sum_total
     print('change%', percent_change)
     print('profit', profit)
@@ -126,16 +129,22 @@ def find_latest_batch_id():
     sorted_by_batch_id = orders_collection.find().sort(
         'batch_id', -1)  # find latest batch ID
     latest_batch_id = sorted_by_batch_id[0]['batch_id']
+    print('DEBUGGING latest_batch_id', latest_batch_id)
     return latest_batch_id
 
 
+# Params change before trade. Will be set in frontend
 start_params = {
-    "symbol": 'BTCDOWNUSDT',
+    # BTCUSDT   BTCDOWNUSDT
+    "symbol": 'BTCUSDT',
+    # BTC   BTCDOWN   USDT
     "sell_symbol": 'USDT',
+    # BUY   SELL
     "side": 'BUY',
-    "start_price": 0.3055,
+    # "start_price": get_price('BTCDOWNUSDT'),
+    "start_price": 31650,
     "invest_step_amount": 20,
-    "invest_percentage": 50,
+    "invest_percentage": 20,
     'fee': 0.075,
     'step_amount': 1.005
 }
@@ -148,7 +157,6 @@ db = db_client['bitpocket_db']
 orders_collection = db['orders']
 
 
-orders_list = []
 updated_params = update_pyramid_params(start_params)
 print('Please check the start parameters')
 pprint.pprint(start_params)

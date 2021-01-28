@@ -20,7 +20,7 @@ load_dotenv(dotenv_path)
 # LIVE keys
 KEY = os.environ.get("KEY")
 SECRET = os.environ.get("SECRET")
-BASE_URL = os.environ.get("BASE_URL")
+BASE_URL = os.environ.get("URL")
 
 # Sandbox keys
 # KEY = os.environ.get("S_KEY")
