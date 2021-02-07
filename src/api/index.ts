@@ -1,34 +1,41 @@
-import axios from 'axios';
-import { log } from 'console';
+import { PathLike } from 'fs';
 
-type requestArgs = {
-  requestMethod: 'string'
-  url: 'string'
-  data: any
-}
+import axios from 'axios';
+
+type RequestArgs = {
+  requestMethod: 'string';
+  url: 'string';
+  data: any;
+};
 
 const requestInstance = axios.create({
   baseURL: 'http://127.0.0.1:5000/',
   headers: {
     'Content-type': 'application/json',
     'Access-Control-Allow-Origin': '*',
+  },
+});
 
-  }
-})
-
-export const request = {
-  ticker(symbol: string) {
-    console.log('%c Log:', 'background: #2C2C2C; color: #18C828;', 'test');
-    return requestInstance.post('/ticker', { symbol })
-  }
+interface Response {
+  data: {
+    response: any;
+  };
 }
 
+export const request = {
+  ticker(symbol: string): Promise<Response> {
+    return requestInstance.post('/ticker', { symbol });
+  },
+};
 
-
-// const request = (requestMethod: string, url: string, data: any) => {
+// const request = (
+//   requestMethod: string,
+//   url: string,
+//   data: { symbol: string }
+// ): Promise<Response> => {
 //   console.log('🚀 ~ file: index.js ~ line 4 ~ request ~ data', data);
 //   const options = {
-//     method: 'POST',
+//     method: requestMethod,
 //     headers: {
 //       'Content-type': 'application/json',
 //       'Access-Control-Allow-Origin': '*',

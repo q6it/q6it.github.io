@@ -44,15 +44,17 @@ def place_pyramid(pyramid_params):
     new_amount = pyramid_params['start_amount']
 
     while(spent_funds < pyramid_params['invest_limit']):
-        if symbol == 'BTCDOWNUSDT':
+        if (symbol == 'BTCDOWNUSDT'):
             new_price = round((new_price * step_percentage_value), 4)
-            new_amount = round((new_amount*step_amount), 2)
+            new_amount = round((new_amount * step_amount), 2)
+        elif (symbol == 'ETHUSDT'):
+            new_price = round((new_price * step_percentage_value), 2)
+            new_amount = round((new_amount * step_amount), 5)
         else:
             new_price = round((new_price * step_percentage_value), 2)
             new_amount = round((new_amount * step_amount), 6)
         # print('new_amount loop', new_amount)
-        spent_funds = spent_funds + new_price*new_amount
-        print('new_price loop', new_price)
+        spent_funds = spent_funds + new_price * new_amount
         print('spentfunds', spent_funds)
         order_params = {
             "symbol": symbol,
@@ -62,14 +64,15 @@ def place_pyramid(pyramid_params):
             "quantity": new_amount,
             "price": new_price
         }
+        print('order_params', order_params)
         order_details = create_order(order_params)
         if 'msg' in order_details:
-            print(order_details['msg'])
+            # print(order_details['msg'])
             input('')
             break
         # print('before', order_details)
         order_details['order_total'] = float(
-            order_details['price'])*float(order_details['origQty'])
+            order_details['price']) * float(order_details['origQty'])
         order_details['batch_id'] = batch_id + 1
         # print('after', order_details)
         orders_list.append(order_details)
@@ -136,15 +139,15 @@ def find_latest_batch_id():
 # Params change before trade. Will be set in frontend
 start_params = {
     # BTCUSDT   BTCDOWNUSDT
-    "symbol": 'BTCUSDT',
+    "symbol": 'ETHUSDT',
     # BTC   BTCDOWN   USDT
     "sell_symbol": 'USDT',
     # BUY   SELL
     "side": 'BUY',
-    # "start_price": get_price('BTCDOWNUSDT'),
-    "start_price": 31650,
+    # "start_price": get_price('BTCUSDT'),
+    "start_price": 1670,
     "invest_step_amount": 20,
-    "invest_percentage": 20,
+    "invest_percentage": 60,
     'fee': 0.075,
     'step_amount': 1.005
 }
