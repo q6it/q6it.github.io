@@ -7,7 +7,7 @@ import os
 from os.path import join, dirname
 from dotenv import load_dotenv
 
-from api import send_public_request, get_all_orders
+from bapi import send_public_request, get_all_orders
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -24,7 +24,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 # BASE_URL = 'https://api.binance.com' # production base url
 # BASE_URL = 'https://testnet.binance.vision'  # testnet base url
 
-symbol = 'BTCEUR'
+# symbol = 'BTCEUR'
 
 
 @app.route('/ticker', methods=['POST'])
@@ -38,6 +38,10 @@ def get_btc_usd():
 
 
 @app.route('/orders', methods=['POST'])
-@cross_origin()
+@cross_origin(origin='localhost',headers=['Content- Type','Authorization'])
 def get_orders():
-    return get_all_orders(symbol)
+    orderData = request.json
+    print(orderData,  file=sys.stdout)
+    print('DEBUGGING', orderData)
+    return {'response': 'Lets pretend that Orders are created'}
+    # return get_all_orders(symbol)
