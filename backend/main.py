@@ -96,8 +96,7 @@ def update_pyramid_params(pyramid_params):
     start_amount = round(
         pyramid_params['invest_step_amount'] / pyramid_params['start_price'], 8)
     invest_percentage_value = pyramid_params['invest_percentage'] / 100
-    invest_limit = get_free_funds(
-        pyramid_params['sell_symbol']) * invest_percentage_value
+    invest_limit = get_free_funds(pyramid_params['sell_symbol']) * invest_percentage_value
     # orders_count = free_funds // invest_limit
     # print('orders_count', orders_count)
     order_details = {
@@ -138,16 +137,16 @@ def find_latest_batch_id():
 
 # Params change before trade. Will be set in frontend
 start_params = {
-    # BTCUSDT   BTCDOWNUSDT
-    "symbol": 'ETHUSDT',
+    # BTCUSDT   BTCDOWNUSDT  ETHUSDT 
+    "symbol": 'BTCDOWNUSDT',
     # BTC   BTCDOWN   USDT
     "sell_symbol": 'USDT',
     # BUY   SELL
     "side": 'BUY',
     # "start_price": get_price('BTCUSDT'),
-    "start_price": 1670,
-    "invest_step_amount": 20,
-    "invest_percentage": 60,
+    "start_price": 0.0924,
+    "invest_step_amount": 25,
+    "invest_percentage": 30,
     'fee': 0.075,
     'step_amount': 1.005
 }

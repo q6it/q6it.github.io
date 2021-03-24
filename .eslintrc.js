@@ -104,8 +104,33 @@ module.exports = {
       files: ['src/app/pages/ThemeBuilder/draggables/**/*.{tsx,ts}'],
       rules: {
         'jsx-a11y/anchor-is-valid': 0,
-        'jsx-a11y/control-has-associated-label': 0,
-        'jsx-a11y/label-has-associated-control': 0,
+        // 'jsx-a11y/control-has-associated-label': 0,
+        // 'jsx-a11y/label-has-associated-control': 0,
+        // 'jsx-a11y/label-has-associated-control': [
+        //   2,
+        //   {
+        //     required: {
+        //       some: ['nesting', 'id'],
+        //     },
+        //   },
+        // ],
+        'jsx-a11y/label-has-associated-control': [
+          'error',
+          {
+            labelComponents: ['Field'],
+            required: {
+              some: ['nesting', 'id'],
+            },
+          },
+        ],
+        'jsx-a11y/label-has-for': [
+          'error',
+          {
+            required: {
+              some: ['nesting', 'id'],
+            },
+          },
+        ],
         'import/no-cycle': 0,
       },
     },

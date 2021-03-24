@@ -1,4 +1,4 @@
-import { PathLike } from 'fs';
+// import { PathLike } from 'fs';
 
 import axios from 'axios';
 
@@ -16,15 +16,33 @@ const requestInstance = axios.create({
   },
 });
 
+interface AxiosResponse<T = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: any;
+}
+type AxiosPromise<TData = any> = Promise<AxiosResponse<TData>>;
+interface DataInterface {
+  symbol: string;
+  priceStep: number;
+  sizeStep: number;
+  price: string;
+  limit: number;
+}
 interface Response {
   data: {
     response: any;
   };
 }
 
-export const request = {
-  ticker(symbol: string): Promise<Response> {
+export const requests = {
+  ticker(symbol: string): Promise<AxiosPromise> {
     return requestInstance.post('/ticker', { symbol });
+  },
+  orders(data: DataInterface): Promise<AxiosPromise> {
+    console.log('🚀 ~ file: index.ts ~ line 44 ~ orders ~ data', data);
+    return requestInstance.post('/orders', { data });
   },
 };
 

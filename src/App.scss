@@ -1,14 +1,43 @@
-html,
-body,
-#root,
-.App,
-.App > div {
-  height: 100% !important;
+@import './variables.scss';
+
+// html,
+// body,
+// #root,
+// .App,
+// .App > div {
+//   // height: 100% !important;
+// }
+
+:root {
+  font-size: 1rem;
+  font-family: 'Open Sans';
 }
 
-.App {
-  text-align: center;
+body {
+  color: black;
+  background-color: white;
+  margin: 0;
+  padding: 0;
 }
+
+body::-webkit-scrollbar {
+  width: 0.25rem;
+}
+
+body::-webkit-scrollbar-track {
+  background: #1e1e24;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: $sidebar-color;
+}
+// .App {
+// text-align: center;
+//   .app--row {
+//     // padding: 0 !important;
+// height: 100vh;
+//   }
+// }
 
 // .App-logo {
 //   height: 40vmin;
