@@ -7,7 +7,6 @@ import { getExchangeInfo } from '../../api/binanceApi';
 import { requests } from '../../api';
 import './OrderSettings.scss';
 // import AppContext from '../../Context';
-// import Ticker from '../Ticker';
 
 interface OrderSettingsProps {
   setOrderData?: React.Dispatch<React.SetStateAction<any>>;

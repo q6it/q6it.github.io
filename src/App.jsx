@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Grid, Image, Segment, Menu, Icon, Header } from 'semantic-ui-react';
 
-import { Ticker } from './components/Ticker';
 import { Order } from './containers/Order/Order';
 import Sidebar from './components/Sidebar/Sidebar';
 

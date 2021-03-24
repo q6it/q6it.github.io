@@ -3,7 +3,6 @@ import { Grid } from 'semantic-ui-react';
 
 import { TopBar } from '../../components/TopBar/TopBar';
 import { OrderSettings } from '../../components/OrderSettings/OrderSettings';
-import { Ticker } from '../../components/Ticker';
 
 import './Order.scss';
 
@@ -17,7 +16,6 @@ export const Order: React.FC = () => {
         <Grid.Row>
           <OrderSettings />
         </Grid.Row>
-        <Grid.Row>{/* <Ticker /> */}</Grid.Row>
       </Grid>
     </div>
   );
