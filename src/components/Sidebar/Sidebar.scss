@@ -23,7 +23,6 @@
 
     & .sidebar-item {
       width: 100%;
-      // padding: 0.5rem;
       &:last-child {
         margin-top: auto;
       }
@@ -32,7 +31,6 @@
     & .sidebar-link {
       display: flex;
       align-items: center;
-      // justify-content: space-between;
       height: 4.5rem;
       color: $text-primary;
       text-decoration: none;
@@ -46,7 +44,6 @@
       }
 
       & .link-text {
-        // display: none;
         margin: 1rem;
 
         &:hover {
@@ -78,12 +75,6 @@
       flex-direction: row;
       & .sidebar-link {
         justify-content: center;
-
-        // &:hover {
-        //   filter: grayscale(0%) opacity(1);
-        //   background: $bg-secondary;
-        //   color: $text-secondary;
-        // }
       }
 
       & .sidebar-item {
