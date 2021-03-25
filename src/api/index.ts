@@ -33,7 +33,6 @@ export const requests = {
     return requestInstance.post('/ticker', { symbol });
   },
   orders(data: DataInterface): Promise<AxiosPromise> {
-    console.log('🚀 ~ file: index.ts ~ line 44 ~ orders ~ data', data);
     return requestInstance.post('/orders', { data });
   },
 };

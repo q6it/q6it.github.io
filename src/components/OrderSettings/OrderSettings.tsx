@@ -55,7 +55,6 @@ export const OrderSettings: React.FC<OrderSettingsProps> = () => {
   };
 
   useEffect(() => {
-    console.log('%c Log:', 'background: #2C2C2C; color: #18C828;', 'rendered');
     let isMounted = true;
     (async () => {
       if (isMounted) {
